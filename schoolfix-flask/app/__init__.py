@@ -10,7 +10,9 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    cors.init_app(app)  # libera o front-end (HTML/JS) chamar essa API de outra origem
+    
+    # Configuração correta do CORS para liberar todas as rotas e credenciais:
+    cors.init_app(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
     from app.routes import auth_routes, chamados_routes, usuarios_routes, areas_routes, chat_routes, notificacoes_routes
     app.register_blueprint(auth_routes.bp)
