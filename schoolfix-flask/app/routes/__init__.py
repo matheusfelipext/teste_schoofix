@@ -3,5 +3,5 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-# Libera o acesso para qualquer origem (Netlify, localhost, etc.)
-CORS(app, resources={r"/*": {"origins": "*"}})
+# Permite requisições de qualquer origem, incluindo a checagem OPTIONS (preflight)
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
