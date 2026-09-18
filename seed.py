@@ -1,7 +1,7 @@
 """
 Popula o banco com dados mínimos pra testar: as 5 áreas do relatório,
-1 diretor, 1 coordenador e 1 gestor de teste.
-Rodar com:  flask shell < seed.py   OU   python seed.py  (com o app context)
+1 diretor, 1 coordenador, 1 gestor e 1 professor de teste.
+Rodar com: python seed.py
 """
 from werkzeug.security import generate_password_hash
 from app import create_app
@@ -13,12 +13,13 @@ app = create_app()
 with app.app_context():
     db.create_all()
 
-    if Usuario.query.filter_by(email="diretora@schoolfix.com").first():
+    # Corrigido para verificar exatamente o e-mail correto
+    if Usuario.query.filter_by(email="diretor@schoolfix.com").first():
         print("Seed já foi rodado antes — nada a fazer.")
     else:
-        diretora = Usuario(
-            nome="Maria Oliveira",
-            email="diretora@schoolfix.com",
+        diretor = Usuario(
+            nome="Matheus Felipe",
+            email="diretor@schoolfix.com",  # Corrigido para corresponder ao que você testa
             senha_hash=generate_password_hash("123456"),
             perfil="diretor",
         )
@@ -40,14 +41,14 @@ with app.app_context():
             senha_hash=generate_password_hash("123456"),
             perfil="professor",
         )
-        db.session.add_all([diretora, coordenador, gestor, professor])
+        db.session.add_all([diretor, coordenador, gestor, professor])
         db.session.flush()  # garante que os IDs já existem antes de usar no gestor_id
 
         areas = [
             Area(nome="Infraestrutura", gestor_id=gestor.id),
-            Area(nome="Eletrica"),
+            Area(nome="Elétrica"),
             Area(nome="Limpeza"),
-            Area(nome="Seguranca"),
+            Area(nome="Segurança"),
             Area(nome="TI"),
         ]
         db.session.add_all(areas)
@@ -76,21 +77,20 @@ with app.app_context():
         db.session.add(chamado_exemplo)
 
         # Uma conversa de exemplo — sem isso Mensagens Diretas fica vazia
-        conversa_exemplo = Conversa(participante1_id=diretora.id, participante2_id=gestor.id)
+        conversa_exemplo = Conversa(participante1_id=diretor.id, participante2_id=gestor.id)
         db.session.add(conversa_exemplo)
         db.session.flush()
         db.session.add(MensagemDireta(
             conversa_id=conversa_exemplo.id,
             autor_id=gestor.id,
-            texto="Diretora, o técnico já terminou a vistoria do teto do laboratório de química.",
+            texto="diretor, o técnico já terminou a vistoria do teto do laboratório de química.",
         ))
-        conversa_exemplo.ultima_mensagem = "Diretora, o técnico já terminou a vistoria do teto do laboratório de química."
+        conversa_exemplo.ultima_mensagem = "diretor, o técnico já terminou a vistoria do teto do laboratório de química."
 
         db.session.commit()
 
-        print("Seed concluído!")
-        print("Login de teste -> diretora@schoolfix.com / 123456")
+        print("Seed concluído com sucesso!")
+        print("Login de teste -> diretor@schoolfix.com / 123456")
         print("Login de teste -> coordenador@schoolfix.com / 123456")
         print("Login de teste -> gestor.infra@schoolfix.com / 123456")
         print("Login de teste -> professor@schoolfix.com / 123456")
-
