@@ -56,7 +56,7 @@ curl http://127.0.0.1:5000/api/health
 ```bash
 curl -X POST http://127.0.0.1:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"diretora@schoolfix.com","senha":"123456"}'
+  -d '{"email":"diretor@schoolfix.com","senha":"123456"}'
 ```
 Isso retorna um `access_token` — use nas próximas chamadas assim:
 ```bash
