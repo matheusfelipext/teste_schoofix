@@ -31,8 +31,16 @@ def create_app():
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
         return response
 
-    # 3. Registra os Blueprints
-    from app.routes import auth_routes, chamados_routes, usuarios_routes, areas_routes, chat_routes, notificacoes_routes
+    # 3. Registra os Blueprints (Apenas uma vez cada .bp)
+    from app.routes import (
+        auth_routes,
+        chamados_routes,
+        usuarios_routes,
+        areas_routes,
+        chat_routes,
+        notificacoes_routes,
+    )
+
     app.register_blueprint(auth_routes.bp)
     app.register_blueprint(chamados_routes.bp)
     app.register_blueprint(usuarios_routes.bp)

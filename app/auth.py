@@ -4,10 +4,7 @@ from flask_jwt_extended import get_jwt, verify_jwt_in_request
 
 
 def perfil_requerido(*perfis_permitidos):
-    """
-    Decorator pra proteger rotas por perfil.
-    Uso: @perfil_requerido("diretor")  ou  @perfil_requerido("diretor", "coordenador")
-    """
+    """Decorator para proteger rotas por perfil de usuário."""
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
@@ -21,7 +18,7 @@ def perfil_requerido(*perfis_permitidos):
 
 
 def login_requerido(fn):
-    """Só exige estar autenticado, qualquer perfil."""
+    """Decorator para exigir autenticação JWT."""
     @wraps(fn)
     def wrapper(*args, **kwargs):
         verify_jwt_in_request()

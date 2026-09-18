@@ -1,8 +1,10 @@
 """
-Popula o banco com dados mínimos pra testar: as 5 áreas do relatório,
-1 diretor, 1 coordenador, 1 gestor e 1 professor de teste.
-Rodar com: python seed.py
+Script de seed para popular o banco de dados SchoolFix.
+Compatível com a estrutura de UUIDs e perfis do models.py.
+
+Executar com: python seed.py
 """
+import uuid
 from werkzeug.security import generate_password_hash
 from app import create_app
 from app.extensions import db
@@ -11,86 +13,135 @@ from app.models import Usuario, Area, Canal, Chamado, Conversa, MensagemDireta
 app = create_app()
 
 with app.app_context():
+    # 1. Apaga e recria todas as tabelas para garantir a estrutura correta do models.py
+    print("Recriando a estrutura do banco de dados...")
+    db.drop_all()
     db.create_all()
 
-    # Corrigido para verificar exatamente o e-mail correto
-    if Usuario.query.filter_by(email="diretor@schoolfix.com").first():
-        print("Seed já foi rodado antes — nada a fazer.")
-    else:
-        diretor = Usuario(
-            nome="Matheus Felipe",
-            email="diretor@schoolfix.com",  # Corrigido para corresponder ao que você testa
-            senha_hash=generate_password_hash("123456"),
-            perfil="diretor",
-        )
-        coordenador = Usuario(
-            nome="Marcos Souza",
-            email="coordenador@schoolfix.com",
-            senha_hash=generate_password_hash("123456"),
-            perfil="coordenador",
-        )
-        gestor = Usuario(
-            nome="Carlos Lima",
-            email="gestor.infra@schoolfix.com",
-            senha_hash=generate_password_hash("123456"),
-            perfil="gestor",
-        )
-        professor = Usuario(
-            nome="Alberto Silva",
-            email="professor@schoolfix.com",
-            senha_hash=generate_password_hash("123456"),
-            perfil="professor",
-        )
-        db.session.add_all([diretor, coordenador, gestor, professor])
-        db.session.flush()  # garante que os IDs já existem antes de usar no gestor_id
+    # 2. Instancia Usuários com UUIDs explicitados
+    diretor = Usuario(
+        id=str(uuid.uuid4()),
+        nome="Matheus Felipe",
+        email="diretor@schoolfix.com",
+        senha_hash=generate_password_hash("123456"),
+        perfil="diretor",
+        ativo=True,
+    )
 
-        areas = [
-            Area(nome="Infraestrutura", gestor_id=gestor.id),
-            Area(nome="Elétrica"),
-            Area(nome="Limpeza"),
-            Area(nome="Segurança"),
-            Area(nome="TI"),
-        ]
-        db.session.add_all(areas)
-        db.session.flush()
-        gestor.area_id = areas[0].id  # Carlos Lima gerencia Infraestrutura
+    coordenador = Usuario(
+        id=str(uuid.uuid4()),
+        nome="Marcos Souza",
+        email="coordenador@schoolfix.com",
+        senha_hash=generate_password_hash("123456"),
+        perfil="coordenador",
+        ativo=True,
+    )
 
-        # Canais do Chat Geral — sem isso a tela de Chat fica vazia
-        canais = [
-            Canal(nome="geral", descricao="Canal aberto para todos", privado=False),
-            Canal(nome="professores", descricao="Canal de docentes", privado=False),
-            Canal(nome="gestao", descricao="Canal exclusivo da administração", privado=True,
-                  perfis_permitidos="diretor,coordenador,gestor"),
-        ]
-        db.session.add_all(canais)
+    gestor = Usuario(
+        id=str(uuid.uuid4()),
+        nome="Carlos Lima",
+        email="gestor.infra@schoolfix.com",
+        senha_hash=generate_password_hash("123456"),
+        perfil="gestor",
+        ativo=True,
+    )
 
-        # Um chamado de exemplo — sem isso Início/Reclamações/Relatórios ficam vazios
-        chamado_exemplo = Chamado(
-            titulo="Infiltração no teto do Laboratório de Química",
-            descricao="Durante as chuvas de ontem, formou-se uma goteira considerável logo acima da bancada principal.",
-            categoria="Infraestrutura",
-            area_id=areas[0].id,
-            status="pendente",
-            prioridade="urgente",
-            autor_id=professor.id,
-        )
-        db.session.add(chamado_exemplo)
+    professor = Usuario(
+        id=str(uuid.uuid4()),
+        nome="Alberto Silva",
+        email="professor@schoolfix.com",
+        senha_hash=generate_password_hash("123456"),
+        perfil="professor",
+        ativo=True,
+    )
 
-        # Uma conversa de exemplo — sem isso Mensagens Diretas fica vazia
-        conversa_exemplo = Conversa(participante1_id=diretor.id, participante2_id=gestor.id)
-        db.session.add(conversa_exemplo)
-        db.session.flush()
-        db.session.add(MensagemDireta(
-            conversa_id=conversa_exemplo.id,
-            autor_id=gestor.id,
-            texto="diretor, o técnico já terminou a vistoria do teto do laboratório de química.",
-        ))
-        conversa_exemplo.ultima_mensagem = "diretor, o técnico já terminou a vistoria do teto do laboratório de química."
+    aluno = Usuario(
+        id=str(uuid.uuid4()),
+        nome="Lucas Andrade",
+        email="aluno@schoolfix.com",
+        senha_hash=generate_password_hash("123456"),
+        perfil="aluno",
+        ativo=True,
+    )
 
-        db.session.commit()
+    db.session.add_all([diretor, coordenador, gestor, professor, aluno])
 
-        print("Seed concluído com sucesso!")
-        print("Login de teste -> diretor@schoolfix.com / 123456")
-        print("Login de teste -> coordenador@schoolfix.com / 123456")
-        print("Login de teste -> gestor.infra@schoolfix.com / 123456")
-        print("Login de teste -> professor@schoolfix.com / 123456")
+    # 3. Instancia Áreas
+    area_infra = Area(id=str(uuid.uuid4()), nome="Infraestrutura", gestor_id=gestor.id)
+    area_eletrica = Area(id=str(uuid.uuid4()), nome="Eletrica")
+    area_limpeza = Area(id=str(uuid.uuid4()), nome="Limpeza")
+    area_seguranca = Area(id=str(uuid.uuid4()), nome="Seguranca")
+    area_ti = Area(id=str(uuid.uuid4()), nome="TI")
+
+    db.session.add_all([area_infra, area_eletrica, area_limpeza, area_seguranca, area_ti])
+
+    # Vincula o gestor à sua área
+    gestor.area_id = area_infra.id
+
+    # 4. Instancia Canais de Chat
+    canal_geral = Canal(
+        id=str(uuid.uuid4()),
+        nome="geral",
+        descricao="Canal aberto para todos",
+        privado=False,
+    )
+    canal_professores = Canal(
+        id=str(uuid.uuid4()),
+        nome="professores",
+        descricao="Canal de docentes",
+        privado=False,
+    )
+    canal_gestao = Canal(
+        id=str(uuid.uuid4()),
+        nome="gestao",
+        descricao="Canal exclusivo da administração",
+        privado=True,
+        perfis_permitidos="diretor,coordenador,gestor",
+    )
+
+    db.session.add_all([canal_geral, canal_professores, canal_gestao])
+
+    # 5. Instancia Chamado Exemplo
+    chamado_exemplo = Chamado(
+        id=str(uuid.uuid4()),
+        titulo="Infiltração no teto do Laboratório de Química",
+        descricao="Durante as chuvas de ontem, formou-se uma goteira considerável logo acima da bancada principal.",
+        categoria="Infraestrutura",
+        area_id=area_infra.id,
+        status="pendente",
+        prioridade="urgente",
+        autor_id=professor.id,
+        anonimo=False,
+    )
+    db.session.add(chamado_exemplo)
+
+    # 6. Instancia Conversa e Mensagem Direta
+    conversa_exemplo = Conversa(
+        id=str(uuid.uuid4()),
+        participante1_id=diretor.id,
+        participante2_id=gestor.id,
+        ultima_mensagem="diretor, o técnico já terminou a vistoria do teto do laboratório de química.",
+    )
+    db.session.add(conversa_exemplo)
+
+    msg_exemplo = MensagemDireta(
+        id=str(uuid.uuid4()),
+        conversa_id=conversa_exemplo.id,
+        autor_id=gestor.id,
+        texto="diretor, o técnico já terminou a vistoria do teto do laboratório de química.",
+    )
+    db.session.add(msg_exemplo)
+
+    # Persiste todas as alterações
+    db.session.commit()
+
+    print("\n==================================================")
+    print("  SEED EXECUTADO COM SUCESSO!")
+    print("==================================================")
+    print("Contas para teste (Senha: 123456):")
+    print(" - Diretor:    diretor@schoolfix.com")
+    print(" - Coordenador: coordenador@schoolfix.com")
+    print(" - Gestor:      gestor.infra@schoolfix.com")
+    print(" - Professor:   professor@schoolfix.com")
+    print(" - Aluno:       aluno@schoolfix.com")
+    print("==================================================\n")
